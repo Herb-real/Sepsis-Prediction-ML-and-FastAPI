@@ -83,3 +83,4 @@ def predict_sepsis_for_multiple_patients(patients: Patients):
 
 if __name__ == "__main__":
     uvicorn.run("main:app", reload=True)
+    
