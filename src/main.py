@@ -9,12 +9,17 @@ import os
 # call the app
 app = FastAPI(title="API")
 
+
 # Load the model and scaler
-def load_model_and_scaler():
+#def load_model_and_scaler():
+def load_model():
     with open("model.pkl", "rb") as f1, open("scaler.pkl", "rb") as f2:
         return pickle.load(f1), pickle.load(f2)
 
-model, scaler = load_model_and_scaler()
+model = load_model
+scaler = ()
+
+#model, scaler = load_model_and_scaler()
 
 def predict(df, endpoint="simple"):
     # Scaling
