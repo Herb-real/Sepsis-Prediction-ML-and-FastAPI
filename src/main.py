@@ -1,65 +1,85 @@
-from fastapi import FastAPI,Form, Body,Path
-from typing import Annotated
-from pydantic import BaseModel, Field
-import joblib
+from fastapi import FastAPI
+from pydantic import BaseModel
+import pickle
 import pandas as pd
 import numpy as np
 import uvicorn
-from fastapi.responses import JSONResponse
+import os
+
+# call the app
+app = FastAPI(title="API")
+
+# Load the model and scaler
+def load_model_and_scaler():
+    with open("model.pkl", "rb") as f1, open("scaler.pkl", "rb") as f2:
+        return pickle.load(f1), pickle.load(f2)
+
+model, scaler = load_model_and_scaler()
+
+def predict(df, endpoint="simple"):
+    # Scaling
+    scaled_df = scaler.transform(df)
+
+    # Prediction
+    prediction = model.predict_proba(scaled_df)
+
+    highest_proba = prediction.max(axis=1)
+
+    predicted_labels = ["Patient does not have sepsis" if i == 0 else f"Patient has sepsis" for i in highest_proba]
+    print(f"Predicted labels: {predicted_labels}")
+    print(highest_proba)
+
+    response = []
+    for label, proba in zip(predicted_labels, highest_proba):
+        output = {
+            "prediction": label,
+            "probability of prediction": str(round(proba * 100)) + '%'
+        }
+        response.append(output)
+
+    return response
 
 
-app = FastAPI()
+class Patient(BaseModel):
+    Blood_Work_R1: int
+    Blood_Pressure: int
+    Blood_Work_R3: int
+    BMI: float
+    Blood_Work_R4: float
+    Patient_age: int
 
-# Load the numerical imputer, scaler, and model
-num_imputer_filepath = "joblib_files/numerical_imputer.joblib"
-scaler_filepath = "joblib_files/scaler.joblib"
-model_filepath = "joblib_files/lr_model.joblib"
+class Patients(BaseModel):
+    all_patients: list[Patient]
 
-num_imputer = joblib.load(num_imputer_filepath)
-scaler = joblib.load(scaler_filepath)
-model = joblib.load(model_filepath)
-
-class PatientData(BaseModel):
-    PRG: float 
-    PL: float
-    PR: float
-    SK: float
-    TS: float
-    M11: float
-    BD2: float
-    Age: float
-    Insurance: int
-
-def preprocess_input_data(user_input):
-    input_data_df = pd.DataFrame([user_input])
-    num_columns = [col for col in input_data_df.columns if input_data_df[col].dtype != 'object']
-    input_data_imputed_num = num_imputer.transform(input_data_df[num_columns])
-    input_scaled_df = pd.DataFrame(scaler.transform(input_data_imputed_num), columns=num_columns)
-    return input_scaled_df
-
+    @classmethod
+    def return_list_of_dict(cls, patients: "Patients"):
+        patient_list = []
+        for patient in patients.all_patients:
+            patient_dict = patient.dict()
+            patient_list.append(patient_dict)
+        return patient_list
+    
+# Endpoints
+# Root Endpoint
 @app.get("/")
-def read_root():
-        return "Sepsis Prediction App"
-@app.post("/sepsis/predict")
-def get_data_from_user(data:PatientData):
-    user_input = data.dict()
-    input_scaled_df = preprocess_input_data(user_input)
-    probabilities = model.predict_proba(input_scaled_df)[0]
-    prediction = np.argmax(probabilities)
+def root():
+    return {"API": "This is an API for sepsis prediction."}
 
-    sepsis_status = "Positive" if prediction == 1 else "Negative"
-    probability = probabilities[1] if prediction == 1 else probabilities[0]
+# Prediction endpoint
+@app.post("/predict")
+def predict_sepsis(patient: Patient):
+    # Make prediction
+    data = pd.DataFrame(patient.dict(), index=[0])
+    parsed = predict(df=data)
+    return {"output": parsed}
 
-    if prediction == 1:
-        sepsis_explanation = "A positive prediction suggests that the patient might be exhibiting sepsis symptoms and requires immediate medical attention."
-    else:
-        sepsis_explanation = "A negative prediction suggests that the patient is not currently exhibiting sepsis symptoms."
+# Multiple Prediction Endpoint
+@app.post("/predict_multiple")
+def predict_sepsis_for_multiple_patients(patients: Patients):
+    """Make prediction with the passed data"""
+    data = pd.DataFrame(Patients.return_list_of_dict(patients))
+    parsed = predict(df=data, endpoint="multi")
+    return {"output": parsed}
 
-    statement = f"The patient's sepsis status is {sepsis_status} with a probability of {probability:.2f}. {sepsis_explanation}"
-
-    user_input_statement = "user-inputted data: "
-    output_df = pd.DataFrame([user_input])
-
-    result = {'predicted_sepsis': sepsis_status, 'statement': statement, 'user_input_statement': user_input_statement, 'input_data_df': output_df.to_dict('records')}
-    return result
-
+if __name__ == "__main__":
+    uvicorn.run("main:app", reload=True)
