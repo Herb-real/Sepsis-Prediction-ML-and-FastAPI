@@ -1,13 +1,12 @@
 # Sepsis Prediction ML and FastAPI
 
 ## [![View Repositories](https://img.shields.io/badge/View-My_Repositories-blue?logo=GitHub)](https://github.com/ikoghoemmanuell?tab=repositories)
-## [![View My Profile](https://img.shields.io/badge/MEDIUM-Article-purple?logo=Medium)](https://medium.com/@emmanuel.ikogho/classification-predicting-sepsis-with-machine-learning-and-fastapi-3a3d05d0b5b4)
+[![View My Profile](https://img.shields.io/badge/MEDIUM-Article-purple?logo=Medium)](https://medium.com/@hdjaniejnr/sepsis-prediction-with-ml-and-fastapi-6dffb33c6439)
 ## [![Docker App](https://img.shields.io/badge/Docker-App-yellow)](https://huggingface.co/spaces/ikoghoemmanuell/Sepsis-Prediction-With-FastAPI)
-## [![Website](https://img.shields.io/badge/My-Website-darkgreen)](https://emmanuelikogho.netlify.app/)
+
 
 Develop a Machine Learning API (Application Programming Interface) using FastAPI.
 
-![ai(3)](https://github.com/ikoghoemmanuell/Machine-Learning-API-using-FastAPI/assets/102419217/1566fe8f-68bc-48fd-b9e0-2f8de41fd18c)
 
 ## Introduction
 
