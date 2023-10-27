@@ -16,7 +16,7 @@ We will explore a comprehensive machine learning project focused on predicting s
 
 ## Importance of Project  
 
-The dataset used contains a list of patients in a hospital and their attributes and whether the patient is positive for Sepssis or not.
+The dataset used contains a list of patients in a hospital and their attributes and whether the patient is positive for Sepsis or not.
 
 Sepsis is a severe and potentially life-threatening condition that occurs when the body's response to an infection triggers widespread inflammation. It is often referred to as blood poisoning.
 
